@@ -6,6 +6,16 @@ use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 
+/**
+ * Class PostController
+ * 
+ * @category PostController_Class
+ * @package  App\Http\Controllers
+ * @author   James Adakole <jambone.james82@gmail.com>
+
+ * @license MIT <https://opensource.org/licenses/MIT>
+ */
+ 
 class PostController extends Controller
 {
     /**
@@ -21,7 +31,8 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StorePostRequest  $request
+     * @param \App\Http\Requests\StorePostRequest $request 
+     * 
      * @return \Illuminate\Http\Response
      */
     public function store(StorePostRequest $request)
@@ -32,7 +43,8 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Post  $post
+     * @param \App\Models\Post $post 
+     * 
      * @return \Illuminate\Http\Response
      */
     public function show(Post $post)
@@ -43,8 +55,9 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdatePostRequest  $request
-     * @param  \App\Models\Post  $post
+     * @param \App\Http\Requests\UpdatePostRequest $request 
+     * @param \App\Models\Post                     $post 
+     * 
      * @return \Illuminate\Http\Response
      */
     public function update(UpdatePostRequest $request, Post $post)
@@ -55,12 +68,12 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Http\Response
+     * @param \App\Models\Post $post 
+     * 
+     * @return \Illuminate\Http\Response 
      */
     public function destroy(Post $post)
     {
         //
-        // business@oystrfinance.com
     }
 }
