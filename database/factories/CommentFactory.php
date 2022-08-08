@@ -17,7 +17,12 @@ class CommentFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'body' => [
+                'text' => $this->faker->paragraph,
+                'image' => $this->faker->imageUrl(),
+            ],
+            'post_id' => 1,
+            'user_id' => 1,
         ];
     }
 }
