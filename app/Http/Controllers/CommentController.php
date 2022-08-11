@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use App\Http\Resources\CommentResource;
+use App\Repositories\CommentRepository;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -22,37 +23,35 @@ class CommentController extends Controller
 
         $comments = Comment::query()->paginate($pageSize);
 
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Comments retrieved successfully',
-        //         'code' => Response::HTTP_FOUND,
-        //         'data' => $comments,
-        //     ], Response::HTTP_FOUND
-        // );
-
-        return CommentResource::collection($comments);
+        return CommentResource::collection($comments)->additional(
+            [
+                'message' => 'Comments retrieved successfully',
+                'code' => Response::HTTP_FOUND,
+            ]
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param \App\Http\Requests\StoreCommentRequest $request - request object
+     * @param StoreCommentRequest $request           - request object
+     * @param CommentRepository   $commentRepository - repository for comment
      * 
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreCommentRequest $request)
-    {
-        $comment = Comment::query()->create($request->validated());
-        
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Comment created successfully',
-        //         'code' => Response::HTTP_CREATED,
-        //         'data' => $comment,
-        //     ], Response::HTTP_CREATED
-        // );
+    public function store(
+        StoreCommentRequest $request,
+        CommentRepository $commentRepository
+    ) {
+        $comment = $commentRepository->create($request->validated());
 
-        return new CommentResource($comment);
+        return (new CommentResource($comment))->additional(
+            [
+                'message' => "Comment created successfully",
+                'statusCode' => Response::HTTP_CREATED
+            ],
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -64,58 +63,61 @@ class CommentController extends Controller
      */
     public function show(Comment $comment)
     {
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Comment retrieved successfully',
-        //         'code' => Response::HTTP_FOUND,
-        //         'data' => $comment,
-        //     ], Response::HTTP_FOUND
-        // );
 
-        return new CommentResource($comment);
+        return (new CommentResource($comment))->additional(
+            [
+                'message' => "Comment retrieved successfully",
+                'statusCode' => Response::HTTP_FOUND
+            ],
+            Response::HTTP_FOUND
+        );
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param \App\Http\Requests\UpdateCommentRequest $request - request object
-     * @param \App\Models\Comment                     $comment - comment object
+     * @param UpdateCommentRequest $request           - request object
+     * @param Comment              $comment           - comment object
+     * @param CommentRepository    $commentRepository - repository for comment 
      * 
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateCommentRequest $request, Comment $comment)
-    {
-        $comment->query()->update($request->validated());
-        
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Comment updated successfully',
-        //         'code' => Response::HTTP_OK,
-        //         'data' => $comment,
-        //     ], Response::HTTP_OK
-        // );
+    public function update(
+        UpdateCommentRequest $request,
+        Comment $comment,
+        CommentRepository $commentRepository
+    ) {
 
-        return new CommentResource($comment);
+        return (new CommentResource(
+            $commentRepository->update($comment, $request->validated())
+        ))->additional(
+            [
+                'message' => 'Comment updated successfully',
+                'code' => Response::HTTP_OK,
+            ],
+            Response::HTTP_OK
+        );
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param \App\Models\Comment $comment - comment object
+     * @param Comment           $comment           - comment object
+     * @param CommentRepository $commentRepository - repository for comment
      * 
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Comment $comment)
+    public function destroy(Comment $comment, CommentRepository $commentRepository)
     {
-        $comment->query()->delete();
-        
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Comment deleted successfully',
-        //         'code' => Response::HTTP_NO_CONTENT,
-        //         'data' => $comment,
-        //     ], Response::HTTP_NO_CONTENT
-        // );
-        return new CommentResource($comment);
+
+        return (new CommentResource(
+            $commentRepository->delete($comment)
+        ))->additional(
+            [
+                'message' => 'Comment deleted successfully',
+                'code' => Response::HTTP_NO_CONTENT,
+            ],
+            Response::HTTP_NO_CONTENT
+        );
     }
 }

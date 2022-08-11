@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Resources\PostResource;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Repositories\PostRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -33,47 +34,36 @@ class PostController extends Controller
 
         $posts = Post::query()->paginate($pageSize);
 
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Posts retrieved successfully',
-        //         'code' => Response::HTTP_FOUND,
-        //         'data' => $posts,
-        //     ],
-        //     Response::HTTP_FOUND
-        // );
-
-        return PostResource::collection($posts);
+        return PostResource::collection($posts)->additional(
+            [
+                'message' => 'Posts retrieved successfully',
+                'code' => Response::HTTP_FOUND,
+            ],
+            Response::HTTP_FOUND
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param \App\Http\Requests\StorePostRequest $request 
+     * @param PostRepository                      $postRepository 
      * 
      * @return \Illuminate\Http\Response
      */
-    public function store(StorePostRequest $request)
+    public function store(StorePostRequest $request, PostRepository $postRepository)
     {
 
-        $postCreated = DB::transaction(
-            function () use ($request) {
-                $post = Post::query()->create($request->validated());
-
-                $post->users()->sync($request->user_ids);
-
-                return $post;
-            }
-        );
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Post created successfully',
-        //         'code' => Response::HTTP_CREATED,
-        //         'data' => $postCreated,
-        //     ],
-        //     Response::HTTP_CREATED
-        // );
-
-        return new PostResource($postCreated);
+        return (new PostResource(
+            $postRepository->create($request->validated())
+        ))
+            ->additional(
+                [
+                    'message' => 'Post created successfully',
+                    'code' => Response::HTTP_CREATED,
+                ],
+                Response::HTTP_CREATED
+            );
     }
 
     /**
@@ -85,16 +75,14 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Post retrieved successfully',
-        //         'code' => Response::HTTP_FOUND,
-        //         'data' => $post,
-        //     ],
-        //     Response::HTTP_FOUND
-        // );
 
-        return new PostResource($post);
+        return (new PostResource($post))->additional(
+            [
+                'message' => 'Post retrieved successfully',
+                'code' => Response::HTTP_FOUND,
+            ],
+            Response::HTTP_FOUND
+        );
     }
 
     /**
@@ -102,45 +90,47 @@ class PostController extends Controller
      *
      * @param \App\Http\Requests\UpdatePostRequest $request 
      * @param \App\Models\Post                     $post 
+     * @param PostRepository                       $postRepository 
      * 
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdatePostRequest $request, Post $post)
-    {
-        $post = $post->query()->update($request->validated());
+    public function update(
+        UpdatePostRequest $request,
+        Post $post,
+        PostRepository $postRepository
+    ) {
 
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Post updated successfully',
-        //         'code' => Response::HTTP_OK,
-        //         'data' => $post,
-        //     ],
-        //     Response::HTTP_OK
-        // );
-
-        return new PostResource($post);
+        return (new PostResource(
+            $postRepository->update(
+                $post,
+                $request->validate()
+            )
+        ))->additional(
+            [
+                'message' => 'Post updated successfully',
+                'code' => Response::HTTP_OK,
+            ],
+            Response::HTTP_OK,
+        );
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param \App\Models\Post $post 
+     * @param PostRepository   $postRepository - repository for post
      * 
      * @return \Illuminate\Http\JsonResponse 
      */
-    public function destroy(Post $post)
+    public function destroy(Post $post, PostRepository $postRepository)
     {
-        $post->query()->delete();
 
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Post deleted successfully',
-        //         'code' => Response::HTTP_NO_CONTENT,
-        //         'data' => $post,
-        //     ],
-        //     Response::HTTP_NO_CONTENT
-        // );
-
-        return new PostResource($post);
+        return (new PostResource($postRepository->delete($post)))->additional(
+            [
+                'message' => 'Comment deleted successfully',
+                'code' => Response::HTTP_NO_CONTENT,
+            ],
+            Response::HTTP_NO_CONTENT
+        );
     }
 }
