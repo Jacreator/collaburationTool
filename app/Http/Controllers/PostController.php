@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use Illuminate\Support\Facades\DB;
+use App\Http\Resources\PostResource;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
  * @license MIT <https://opensource.org/licenses/MIT>
  */
- 
+
 class PostController extends Controller
 {
     /**
@@ -27,15 +29,20 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::query()->get();
-        
-        return new JsonResponse(
-            [
-                'message' => 'Posts retrieved successfully',
-                'code' => Response::HTTP_FOUND,
-                'data' => $posts,
-            ], Response::HTTP_FOUND
-        );
+        $pageSize = request()->has('page_size') ? request()->get('page_size') : 10;
+
+        $posts = Post::query()->paginate($pageSize);
+
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Posts retrieved successfully',
+        //         'code' => Response::HTTP_FOUND,
+        //         'data' => $posts,
+        //     ],
+        //     Response::HTTP_FOUND
+        // );
+
+        return PostResource::collection($posts);
     }
 
     /**
@@ -47,15 +54,26 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-        $post = Post::query()->create($request->validated());
-        
-        return new JsonResponse(
-            [
-                'message' => 'Post created successfully',
-                'code' => Response::HTTP_CREATED,
-                'data' => $post,
-            ], Response::HTTP_CREATED
+
+        $postCreated = DB::transaction(
+            function () use ($request) {
+                $post = Post::query()->create($request->validated());
+
+                $post->users()->sync($request->user_ids);
+
+                return $post;
+            }
         );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Post created successfully',
+        //         'code' => Response::HTTP_CREATED,
+        //         'data' => $postCreated,
+        //     ],
+        //     Response::HTTP_CREATED
+        // );
+
+        return new PostResource($postCreated);
     }
 
     /**
@@ -67,13 +85,16 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        return new JsonResponse(
-            [
-                'message' => 'Post retrieved successfully',
-                'code' => Response::HTTP_FOUND,
-                'data' => $post,
-            ], Response::HTTP_FOUND
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Post retrieved successfully',
+        //         'code' => Response::HTTP_FOUND,
+        //         'data' => $post,
+        //     ],
+        //     Response::HTTP_FOUND
+        // );
+
+        return new PostResource($post);
     }
 
     /**
@@ -88,13 +109,16 @@ class PostController extends Controller
     {
         $post = $post->query()->update($request->validated());
 
-        return new JsonResponse(
-            [
-                'message' => 'Post updated successfully',
-                'code' => Response::HTTP_OK,
-                'data' => $post,
-            ], Response::HTTP_OK
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Post updated successfully',
+        //         'code' => Response::HTTP_OK,
+        //         'data' => $post,
+        //     ],
+        //     Response::HTTP_OK
+        // );
+
+        return new PostResource($post);
     }
 
     /**
@@ -108,12 +132,15 @@ class PostController extends Controller
     {
         $post->query()->delete();
 
-        return new JsonResponse(
-            [
-                'message' => 'Post deleted successfully',
-                'code' => Response::HTTP_NO_CONTENT,
-                'data' => $post,
-            ], Response::HTTP_NO_CONTENT
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Post deleted successfully',
+        //         'code' => Response::HTTP_NO_CONTENT,
+        //         'data' => $post,
+        //     ],
+        //     Response::HTTP_NO_CONTENT
+        // );
+
+        return new PostResource($post);
     }
 }

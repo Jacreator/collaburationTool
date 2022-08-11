@@ -6,6 +6,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
+use App\Http\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -18,15 +19,18 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::query()->get();
+        $pageSize = request()->has('page_size') ? request()->get('page_size') : 10;
+        $users = User::query()->paginate($pageSize);
         
-        return new JsonResponse(
-            [
-                'message' => 'Users retrieved successfully',
-                'code' => Response::HTTP_FOUND,
-                'data' => $users,
-            ], Response::HTTP_FOUND
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Users retrieved successfully',
+        //         'code' => Response::HTTP_FOUND,
+        //         'data' => $users,
+        //     ], Response::HTTP_FOUND
+        // );
+
+        return UserResource::collection($users);
     }
 
     /**
@@ -40,13 +44,15 @@ class UserController extends Controller
     {
         $user = User::query()->create($request->validated());
         
-        return new JsonResponse(
-            [
-                'message' => 'User created successfully',
-                'code' => Response::HTTP_CREATED,
-                'data' => $user,
-            ], Response::HTTP_CREATED
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'User created successfully',
+        //         'code' => Response::HTTP_CREATED,
+        //         'data' => $user,
+        //     ], Response::HTTP_CREATED
+        // );
+
+        return new UserResource($user);
     }
 
     /**
@@ -58,13 +64,15 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return new JsonResponse(
-            [
-                'message' => 'User retrieved successfully',
-                'code' => Response::HTTP_FOUND,
-                'data' => $user,
-            ], Response::HTTP_FOUND
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'User retrieved successfully',
+        //         'code' => Response::HTTP_FOUND,
+        //         'data' => $user,
+        //     ], Response::HTTP_FOUND
+        // );
+
+        return new UserResource($user);
     }
 
     /**
@@ -79,13 +87,15 @@ class UserController extends Controller
     {
         $user->update($request->validated());
         
-        return new JsonResponse(
-            [
-                'message' => 'User updated successfully',
-                'code' => Response::HTTP_ACCEPTED,
-                'data' => $user,
-            ], Response::HTTP_ACCEPTED
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'User updated successfully',
+        //         'code' => Response::HTTP_ACCEPTED,
+        //         'data' => $user,
+        //     ], Response::HTTP_ACCEPTED
+        // );
+
+        return new UserResource($user);
     }
 
     /**
@@ -99,12 +109,14 @@ class UserController extends Controller
     {
         $user->delete();
         
-        return new JsonResponse(
-            [
-                'message' => 'User deleted successfully',
-                'code' => Response::HTTP_NO_CONTENT,
-                'data' => $user,
-            ], Response::HTTP_NO_CONTENT
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'User deleted successfully',
+        //         'code' => Response::HTTP_NO_CONTENT,
+        //         'data' => $user,
+        //     ], Response::HTTP_NO_CONTENT
+        // );
+
+        return new UserResource($user);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
+use App\Http\Resources\CommentResource;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -17,15 +18,19 @@ class CommentController extends Controller
      */
     public function index()
     {
-        $comments = Comment::query()->get();
+        $pageSize = request()->has('page_size') ? request()->get('page_size') : 10;
 
-        return new JsonResponse(
-            [
-                'message' => 'Comments retrieved successfully',
-                'code' => Response::HTTP_FOUND,
-                'data' => $comments,
-            ], Response::HTTP_FOUND
-        );
+        $comments = Comment::query()->paginate($pageSize);
+
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Comments retrieved successfully',
+        //         'code' => Response::HTTP_FOUND,
+        //         'data' => $comments,
+        //     ], Response::HTTP_FOUND
+        // );
+
+        return CommentResource::collection($comments);
     }
 
     /**
@@ -39,13 +44,15 @@ class CommentController extends Controller
     {
         $comment = Comment::query()->create($request->validated());
         
-        return new JsonResponse(
-            [
-                'message' => 'Comment created successfully',
-                'code' => Response::HTTP_CREATED,
-                'data' => $comment,
-            ], Response::HTTP_CREATED
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Comment created successfully',
+        //         'code' => Response::HTTP_CREATED,
+        //         'data' => $comment,
+        //     ], Response::HTTP_CREATED
+        // );
+
+        return new CommentResource($comment);
     }
 
     /**
@@ -57,13 +64,15 @@ class CommentController extends Controller
      */
     public function show(Comment $comment)
     {
-        return new JsonResponse(
-            [
-                'message' => 'Comment retrieved successfully',
-                'code' => Response::HTTP_FOUND,
-                'data' => $comment,
-            ], Response::HTTP_FOUND
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Comment retrieved successfully',
+        //         'code' => Response::HTTP_FOUND,
+        //         'data' => $comment,
+        //     ], Response::HTTP_FOUND
+        // );
+
+        return new CommentResource($comment);
     }
 
     /**
@@ -78,13 +87,15 @@ class CommentController extends Controller
     {
         $comment->query()->update($request->validated());
         
-        return new JsonResponse(
-            [
-                'message' => 'Comment updated successfully',
-                'code' => Response::HTTP_OK,
-                'data' => $comment,
-            ], Response::HTTP_OK
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Comment updated successfully',
+        //         'code' => Response::HTTP_OK,
+        //         'data' => $comment,
+        //     ], Response::HTTP_OK
+        // );
+
+        return new CommentResource($comment);
     }
 
     /**
@@ -98,12 +109,13 @@ class CommentController extends Controller
     {
         $comment->query()->delete();
         
-        return new JsonResponse(
-            [
-                'message' => 'Comment deleted successfully',
-                'code' => Response::HTTP_NO_CONTENT,
-                'data' => $comment,
-            ], Response::HTTP_NO_CONTENT
-        );
+        // return new JsonResponse(
+        //     [
+        //         'message' => 'Comment deleted successfully',
+        //         'code' => Response::HTTP_NO_CONTENT,
+        //         'data' => $comment,
+        //     ], Response::HTTP_NO_CONTENT
+        // );
+        return new CommentResource($comment);
     }
 }
