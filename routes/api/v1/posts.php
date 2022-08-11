@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 
-Route::middleware('auth')
+Route::middleware('')
     ->name('posts.')
     ->group(
         function () {

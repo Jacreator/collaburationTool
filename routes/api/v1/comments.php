@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CommentController;
 
-Route::middleware('auth:sanctum')
+Route::middleware('')
     ->name('comments.')
     ->group(
         function () {

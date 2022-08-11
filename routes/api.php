@@ -1,7 +1,6 @@
 <?php
 
 use App\Helpers\Routes\RouteHelper;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
