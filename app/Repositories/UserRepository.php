@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\GeneralJsonException;
 use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -52,7 +53,7 @@ class UserRepository extends BaseRepository
 
                 throw_if(
                     !$user,
-                    new Exception('User could not be update')
+                    new GeneralJsonException('User could not be update')
                 );
 
                 return $user;
@@ -72,7 +73,7 @@ class UserRepository extends BaseRepository
         return DB::transaction(
             function () use ($user) {
                 $user->delete();
-                throw_if(!$user, new Exception('User could not be deleted'));
+                throw_if(!$user, new GeneralJsonException('User could not be deleted'));
                 return $user;
             }
         );

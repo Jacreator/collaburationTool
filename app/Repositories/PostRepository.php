@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\GeneralJsonException;
 use Exception;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +60,7 @@ class PostRepository extends BaseRepository
                         'body' => data_get($data, 'body', []),
                     ]
                 );
-                throw_if(!$updated, new \Exception('Could not update the post.'));
+                throw_if(!$updated, new GeneralJsonException('Could not update the post.'));
 
                 if ($userId = data_get($data, 'user_ids')) {
                     $post->users()->sync($userId);
@@ -82,7 +83,7 @@ class PostRepository extends BaseRepository
         return DB::transaction(
             function () use ($model) {
                 $model->delete();
-                throw_if(!$model, new \Exception('Could not delete the post.'));
+                throw_if(!$model, new GeneralJsonException('Could not delete the post.'));
                 return $model;
             }
         );

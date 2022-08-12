@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\GeneralJsonException;
 use App\Models\Comment;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -54,7 +55,7 @@ class CommentRepository
 
                 throw_if(
                     !$updated,
-                    new Exception('Comment could not be update')
+                    new GeneralJsonException('Comment could not be update')
                 );
 
                 return $comment;
@@ -74,7 +75,7 @@ class CommentRepository
         return DB::transaction(
             function () use ($comment) {
                 $deleted = $comment->delete();
-                throw_if(!$deleted, new Exception('Could not delete Comment'));
+                throw_if(!$deleted, new GeneralJsonException('Could not delete Comment'));
                 return $comment;
             }
         );
