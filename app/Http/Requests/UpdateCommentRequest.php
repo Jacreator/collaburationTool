@@ -13,7 +13,7 @@ class UpdateCommentRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,27 @@ class UpdateCommentRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "body" => "required|string|max:255",
+            "user_id" => "required|integer|exists:users,id",
+            "post_id" => "required|integer|exists:posts,id",
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, mixed>
+     */
+    public function messages()
+    {
+        return [
+            "body.required" => "The body is required.",
+            "user_id.required" => "The user id is required.",
+            "user_id.integer" => "The user id must be an integer.",
+            "user_id.exists" => "The user id must exist in the users table.",
+            "post_id.required" => "The post id is required.",
+            "post_id.integer" => "The post id must be an integer.",
+            "post_id.exists" => "The post id must exist in the posts table.",
         ];
     }
 }

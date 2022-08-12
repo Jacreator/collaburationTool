@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class UserRepository extends BaseRepository
@@ -13,9 +14,9 @@ class UserRepository extends BaseRepository
      * 
      * @param array $user - array of user data
      * 
-     * @return mixed
+     * @return mixed | Model
      */
-    public function create(array $user): array
+    public function create(array $user): array | Model
     {
         return DB::transaction(
             function () use ($user) {
@@ -36,18 +37,25 @@ class UserRepository extends BaseRepository
      * @param mixed $user - user object for update
      * @param array $data - data to update for user
      * 
-     * @return mixed
+     * @return Model
      */
-    public function update($user, array $data): mixed
+    public function update($user, array $data): Model
     {
         return DB::transaction(
             function () use ($user, $data) {
-                return $user->update(
+                $user->update(
                     [
                         'name' => data_get($data, 'name', $user->name),
                         'email' => data_get($data, 'email', $user->email)
                     ]
-                ) ?? throw new Exception('User could not be update');
+                );
+
+                throw_if(
+                    !$user,
+                    new Exception('User could not be update')
+                );
+
+                return $user;
             }
         );
     }
@@ -57,13 +65,15 @@ class UserRepository extends BaseRepository
      * 
      * @param Object $user - user object for deletion
      * 
-     * @return bool | Exception
+     * @return Model | Exception
      */
-    public function delete($user): bool | Exception
+    public function delete($user): Model | Exception
     {
         return DB::transaction(
             function () use ($user) {
-                return $user->delete() ?? throw new Exception('Could not delete user');
+                $user->delete();
+                throw_if(!$user, new Exception('User could not be deleted'));
+                return $user;
             }
         );
     }

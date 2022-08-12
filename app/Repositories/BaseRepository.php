@@ -3,6 +3,8 @@
 namespace App\Repositories;
 
 use Exception;
+use Illuminate\Database\Eloquent\Model;
+
 
 abstract class BaseRepository
 {
@@ -11,9 +13,9 @@ abstract class BaseRepository
      * 
      * @param array $data - The data to create a new record with.
      * 
-     * @return Model
+     * @return mixed | Model
      */
-    abstract public function create(array $data): array;
+    abstract public function create(array $data): array | Model;
     
     /**
      * Update a record.
@@ -21,16 +23,16 @@ abstract class BaseRepository
      * @param int   $model - The id of the record to update.
      * @param array $data  - The data to update a record with.
      * 
-     * @return mixed
+     * @return Model
      */
-    abstract public function update($model, array $data): mixed;
+    abstract public function update($model, array $data): Model;
     
     /**
      * Delete a record.
      * 
      * @param Model $model - The id of the record to delete.
      * 
-     * @return bool | Exception 
+     * @return Model | Exception 
      */
-    abstract public function delete($model): bool | Exception;
+    abstract public function delete($model): Model | Exception;
 }

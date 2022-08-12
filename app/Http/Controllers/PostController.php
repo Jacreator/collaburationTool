@@ -103,7 +103,7 @@ class PostController extends Controller
         return (new PostResource(
             $postRepository->update(
                 $post,
-                $request->validate()
+                $request->validated()
             )
         ))->additional(
             [

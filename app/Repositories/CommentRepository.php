@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Comment;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class CommentRepository
@@ -36,20 +37,27 @@ class CommentRepository
      * @param mixed $comment - the id of the comment
      * @param array $data    - the comment payload for update
      * 
-     * @return mixed
+     * @return Model
      */
-    public function update($comment, array $data)
+    public function update($comment, array $data): Model
     {
 
         return DB::transaction(
             function () use ($comment, $data) {
-                return $comment->update(
+                $updated = $comment->update(
                     [
                         'body' => data_get($data, 'body'),
                         'user_id' => data_get($data, 'user_id'),
                         'post_id' => data_get($data, 'post_id')
                     ]
                 );
+
+                throw_if(
+                    !$updated,
+                    new Exception('Comment could not be update')
+                );
+
+                return $comment;
             }
         );
     }
@@ -59,15 +67,15 @@ class CommentRepository
      * 
      * @param Comment $comment - an object of comment 
      * 
-     * @return bool | Exception
+     * @return Model | Exception
      */
-    public function delete($comment): bool | Exception
+    public function delete($comment): Model | Exception
     {
         return DB::transaction(
             function () use ($comment) {
-                return $comment->delete() ?? throw new Exception(
-                    'Could not delete Comment'
-                );
+                $deleted = $comment->delete();
+                throw_if(!$deleted, new Exception('Could not delete Comment'));
+                return $comment;
             }
         );
     }

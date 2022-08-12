@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
+use App\Http\Requests\UpdateUserRequest;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 class UserController extends Controller
 {
@@ -106,7 +104,6 @@ class UserController extends Controller
      */
     public function destroy(User $user, UserRepository $userRepository)
     {
-
         return (new UserResource($userRepository->delete($user)))->additional(
             [
                 'message' => 'User deleted successfully',

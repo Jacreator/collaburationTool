@@ -3,8 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CommentController;
 
-Route::middleware('')
-    ->name('comments.')
+Route::name('comments.')
     ->group(
         function () {
             Route::get('/comments', [CommentController::class, 'index'])
