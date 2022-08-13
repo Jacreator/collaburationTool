@@ -2,15 +2,15 @@
 
 namespace App\Repositories;
 
-use App\Exceptions\GeneralJsonException;
 use Exception;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\PostResource;
 use App\Repositories\BaseRepository;
-use GuzzleHttp\Psr7\Request;
 use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\HttpFoundation\Response;
+use App\Exceptions\GeneralJsonException;
+use App\Events\Models\Post\PostCreatedEvent;
+use App\Events\Models\Post\PostDeletedEvent;
+use App\Events\Models\Post\PostUpdatedEvent;
 
 class PostRepository extends BaseRepository
 {
@@ -36,7 +36,7 @@ class PostRepository extends BaseRepository
                     if ($userId = data_get($data, 'user_ids')) {
                         $post->users()->sync($userId);
                     }
-
+                    event(new PostCreatedEvent($post));
                     return $post;
                 }
             );
@@ -60,12 +60,15 @@ class PostRepository extends BaseRepository
                         'body' => data_get($data, 'body', []),
                     ]
                 );
-                throw_if(!$updated, new GeneralJsonException('Could not update the post.'));
+                throw_if(
+                    !$updated, 
+                    new GeneralJsonException('Could not update the post.')
+                );
 
                 if ($userId = data_get($data, 'user_ids')) {
                     $post->users()->sync($userId);
                 }
-
+                event(new PostUpdatedEvent($post));
                 return $post;
             }
         );
@@ -82,8 +85,12 @@ class PostRepository extends BaseRepository
     {
         return DB::transaction(
             function () use ($model) {
-                $model->delete();
-                throw_if(!$model, new GeneralJsonException('Could not delete the post.'));
+                $deleted = $model->delete();
+                throw_if(
+                    !$deleted, 
+                    new GeneralJsonException('Could not delete the post.')
+                );
+                event(new PostDeletedEvent($model));
                 return $model;
             }
         );

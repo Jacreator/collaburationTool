@@ -2,11 +2,15 @@
 
 namespace App\Repositories;
 
-use App\Exceptions\GeneralJsonException;
-use App\Models\User;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Events\Models\User\UserCreated;
+use Illuminate\Database\Eloquent\Model;
+use App\Exceptions\GeneralJsonException;
+use App\Events\Models\User\UserCreatedEvent;
+use App\Events\Models\User\UserDeletedEvent;
+use App\Events\Models\User\UserUpdatedEvent;
 
 class UserRepository extends BaseRepository
 {
@@ -21,13 +25,19 @@ class UserRepository extends BaseRepository
     {
         return DB::transaction(
             function () use ($user) {
-                return User::create(
+                $created = User::create(
                     [
                         'name' => data_get($user, 'name', 'Chief'),
                         'email' => data_get($user, 'email'),
                         'password' => bcrypt(data_get($user, 'password'))
                     ]
                 );
+                throw_if(
+                    !$created,
+                    new GeneralJsonException('User could not be created')
+                );
+                event(new UserCreatedEvent($created));
+                return $created;
             }
         );
     }
@@ -55,7 +65,7 @@ class UserRepository extends BaseRepository
                     !$user,
                     new GeneralJsonException('User could not be update')
                 );
-
+                event(new UserUpdatedEvent($user));
                 return $user;
             }
         );
@@ -72,8 +82,12 @@ class UserRepository extends BaseRepository
     {
         return DB::transaction(
             function () use ($user) {
-                $user->delete();
-                throw_if(!$user, new GeneralJsonException('User could not be deleted'));
+                $deleted = $user->delete();
+                throw_if(
+                    !$deleted, 
+                    new GeneralJsonException('User could not be deleted')
+                );
+                event(new UserDeletedEvent($user));
                 return $user;
             }
         );

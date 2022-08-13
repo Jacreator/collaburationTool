@@ -2,11 +2,14 @@
 
 namespace App\Repositories;
 
-use App\Exceptions\GeneralJsonException;
-use App\Models\Comment;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Comment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
+use App\Exceptions\GeneralJsonException;
+use App\Events\Models\Comment\CommentCreatedEvent;
+use App\Events\Models\Comment\CommentDeletedEvent;
+use App\Events\Models\Comment\CommentUpdatedEvent;
 
 class CommentRepository
 {
@@ -21,13 +24,20 @@ class CommentRepository
     {
         return DB::transaction(
             function () use ($comment) {
-                return Comment::create(
+                $created = Comment::create(
                     [
                         'body' => data_get($comment, 'body', []),
                         'user_id' => data_get($comment, 'user_id'),
                         'post_id' => data_get($comment, 'post_id')
                     ]
                 );
+                throw_if(
+                    !$created, 
+                    new GeneralJsonException('Comment could not be created')
+                );
+
+                event(new CommentCreatedEvent($created));
+                return $created;
             }
         );
     }
@@ -57,7 +67,7 @@ class CommentRepository
                     !$updated,
                     new GeneralJsonException('Comment could not be update')
                 );
-
+                event(new CommentUpdatedEvent($comment));
                 return $comment;
             }
         );
@@ -75,7 +85,11 @@ class CommentRepository
         return DB::transaction(
             function () use ($comment) {
                 $deleted = $comment->delete();
-                throw_if(!$deleted, new GeneralJsonException('Could not delete Comment'));
+                throw_if(
+                    !$deleted,
+                    new GeneralJsonException('Could not delete Comment')
+                );
+                event(new CommentDeletedEvent($comment));
                 return $comment;
             }
         );
