@@ -27,7 +27,7 @@ class CommentController extends Controller
             [
                 'message' => 'Comments retrieved successfully',
                 'code' => Response::HTTP_FOUND,
-            ]
+            ], Response::HTTP_FOUND
         );
     }
 
